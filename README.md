@@ -46,7 +46,7 @@ Now we insert some data in it
         .await;
 ```
 
-and hand over a slice reference of type `&[TestDBID]` on the rust side,
+and hand over a slice reference of type `&[String]` on the rust side,
 the result is correctly inferred as `Result<Vec<TestDBID>, sqlx::Error>`.
 
 Now we want to create a table having a foreign key column referencing
@@ -100,10 +100,10 @@ error: could not compile `sqlx-custom-type-unnest` due to previous error
 Using `PREPARE` and `EXECUTE` like this works though:
 
 ```
-PREPARE insert_dependent2(test_id[]) AS 
-INSERT INTO dependent2 (test)
+PREPARE insert_dependent(test_id[]) AS 
+INSERT INTO dependent (test)
 SELECT test_ids FROM UNNEST($1::test_id[]) AS test_ids(id)
-ON CONFLICT (test) DO UPDATE SET test = dependent2.test
+ON CONFLICT (test) DO UPDATE SET test = dependent.test
 RETURNING id;
 
 EXECUTE insert_dependent2(ARRAY[ROW(1), ROW(2)]::test_id[]);
