@@ -133,3 +133,13 @@ dev=# SELECT typname, typtype, typcategory, typrelid, typelem, typbasetype FROM 
 
 maybe there is some lookup of another indirection missing?
 
+In [this example repo](https://github.com/typetetris/sqlx-custom-type-unnest) this is example `record-single-element`.
+
+To try compile it, run
+
+```
+docker compose up -d
+export DATABASE_URL="postgresql://dev:dev@localhost/dev"
+sqlx migrate run
+cargo build --example record-single-element
+```
