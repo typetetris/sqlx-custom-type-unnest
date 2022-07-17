@@ -97,16 +97,17 @@ error: unsupported type _test_id for param #1
 error: could not compile `sqlx-custom-type-unnest` due to previous error
 ```
 
-Using `PREPARE` and `EXECUTE` like this works though:
+Using `PREPARE` and `EXECUTE` like this works (on an empty database):
 
 ```
+INSERT INTO test(name) VALUES ('a'),('b');
 PREPARE insert_dependent(test_id[]) AS 
 INSERT INTO dependent (test)
 SELECT test_ids FROM UNNEST($1::test_id[]) AS test_ids(id)
 ON CONFLICT (test) DO UPDATE SET test = dependent.test
 RETURNING id;
 
-EXECUTE insert_dependent2(ARRAY[ROW(1), ROW(2)]::test_id[]);
+EXECUTE insert_dependent(ARRAY[ROW(1), ROW(2)]::test_id[]);
 ```
 
 if there are rows with ids `(1), (2)` in tables `test`.
