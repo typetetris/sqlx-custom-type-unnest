@@ -26,14 +26,16 @@ async fn main() -> anyhow::Result<()> {
         .collect()
         .await;
 
+    let dep_names: Vec<_> = ["dependent_name1", "dependent_name2", "dependent_name3"].into_iter().map(|v| v.to_string()).collect();
     let dependent2_ids: Result<Vec<_>,_> = sqlx::query!(
         "
-        INSERT INTO dependent2 (test)
-        SELECT test_ids FROM UNNEST($1::test_id[]) AS test_ids(id)
-        ON CONFLICT (test) DO UPDATE SET test = dependent2.test
+        INSERT INTO dependent_with_name (test,name)
+        SELECT ROW(test_ids.id)::test_id, test_ids.name FROM UNNEST($1::test_id[], $2::TEXT[]) AS test_ids(id, name)
+        ON CONFLICT (test,name) DO UPDATE SET test = dependent_with_name.test
         RETURNING id
         ",
         &test_ids[..],
+        &dep_names[..]
         ).fetch(&pool)
         .map(|result| result.map(|record| record.id))
         .collect()
