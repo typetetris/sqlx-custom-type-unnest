@@ -53,7 +53,7 @@ Now we want to create a table having a foreign key column referencing
 table `test`
 
 ```sql
-CREATE TABLE dependent2 (
+CREATE TABLE dependent (
   id SERIAL PRIMARY KEY,
   test test_id REFERENCES test(id) ON DELETE CASCADE NOT NULL UNIQUE
 );
@@ -62,11 +62,11 @@ CREATE TABLE dependent2 (
 and insert some data
 
 ```rust
-    let dependent2_ids: Result<Vec<_>,_> = sqlx::query!(
+    let dependent_ids: Result<Vec<_>,_> = sqlx::query!(
         "
-        INSERT INTO dependent2 (test)
+        INSERT INTO dependent (test)
         SELECT test_ids FROM UNNEST($1::test_id[]) AS test_ids(id)
-        ON CONFLICT (test) DO UPDATE SET test = dependent2.test
+        ON CONFLICT (test) DO UPDATE SET test = dependent.test
         RETURNING id
         ",
         &test_ids[..],
@@ -82,10 +82,10 @@ but this results in the following error:
 error: unsupported type _test_id for param #1
   --> src/main.rs:29:44
    |
-29 |       let dependent2_ids: Result<Vec<_>,_> = sqlx::query!(
+29 |       let dependent_ids: Result<Vec<_>,_> = sqlx::query!(
    |  ____________________________________________^
 30 | |         "
-31 | |         INSERT INTO dependent2 (test)
+31 | |         INSERT INTO dependent (test)
 32 | |         SELECT test_ids FROM UNNEST($1::test_id[]) AS test_ids(id)
 ...  |
 36 | |         &test_ids[..],

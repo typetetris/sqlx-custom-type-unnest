@@ -26,7 +26,7 @@ async fn main() -> anyhow::Result<()> {
         .collect()
         .await;
 
-    let dependent2_ids: Result<Vec<_>,_> = sqlx::query!(
+    let dependent_ids: Result<Vec<_>,_> = sqlx::query!(
         "
         INSERT INTO dependent (test)
         SELECT test_ids FROM UNNEST($1::test_id[]) AS test_ids(id)
