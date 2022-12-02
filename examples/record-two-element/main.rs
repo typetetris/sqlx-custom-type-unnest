@@ -1,4 +1,5 @@
 use anyhow::Context;
+use sqlx::postgres::{PgHasArrayType, PgTypeInfo};
 use tokio_stream::StreamExt;
 
 #[derive(Clone, Hash, PartialEq, Eq, sqlx::Type, Debug)]
@@ -6,6 +7,12 @@ use tokio_stream::StreamExt;
 pub struct TestDBID {
     id: i32,
     name: String
+}
+
+impl PgHasArrayType for TestDBID {
+    fn array_type_info() -> PgTypeInfo {
+        PgTypeInfo::with_name("_test_id")
+    }
 }
 
 #[tokio::main]
@@ -27,6 +34,8 @@ async fn main() -> anyhow::Result<()> {
         .collect()
         .await;
 
+    let test_ids = test_ids?;
+
     let dependent2_ids: Result<Vec<_>,_> = sqlx::query!(
         "
         INSERT INTO dependent2 (test)
@@ -34,11 +43,11 @@ async fn main() -> anyhow::Result<()> {
         ON CONFLICT (test) DO UPDATE SET test = dependent2.test
         RETURNING id
         ",
-        &test_ids[..],
+        &test_ids[..] as &[TestDBID],
         ).fetch(&pool)
         .map(|result| result.map(|record| record.id))
         .collect()
         .await;
-    
+
     Ok(())
 }
